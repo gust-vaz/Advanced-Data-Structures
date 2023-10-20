@@ -1,4 +1,3 @@
-//Parte (a) do EP feita em cerca de 9 horas
 #include "Estat.h"
 
 int main(){
