@@ -1,4 +1,3 @@
-//EP feito em cerca de 15h, basicamente um final de semana inteiro dedicado a ele
 #include <iostream>
 #include <vector>
 #include <algorithm>
