@@ -1,4 +1,3 @@
-//Parte (b) do EP feita em cerca de 2 horas
 #include "Dinam.h"
 
 int main(){
