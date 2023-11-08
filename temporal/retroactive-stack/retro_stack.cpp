@@ -22,7 +22,7 @@ typedef struct cell{
      * folha: +1 se "push", -1 se "pop"                 */
     int sum;
 
-    /* interna: max(0, left.smax + right.sum)
+    /* interna: max(right.smax, left.smax + right.sum)
      * folha: 1 se "push", 0 se "pop"                   */
     int smax;
 
@@ -44,6 +44,9 @@ typedef struct{
 
 //cria e devolve uma pilha retroativa vazia
 retro_stack retroStack();                           
+
+//atualiza os valores de maxi, sum e smax de um nó
+node* update(node*);
 
 //começa a inserir uma operação na sequência de modificações no instante t 
 node* start_insert(int, item, bool, node*);               
@@ -69,27 +72,28 @@ int top(int, retro_stack);
 //imprime todos os elementos da pilha retroativa no instante t
 void print(int, retro_stack);                             
 
-
 retro_stack retroStack(){
     retro_stack p;
     p.raiz = nullptr;
     return p;
 }
 
+node* update(node* r){
+    r->maxi = r->right->maxi;
+    r->sum = r->left->sum + r->right->sum;
+    r->smax = max(r->right->smax, r->left->smax + r->right->sum);
+    return r;
+}
+
 node* rotationRight(node* r){
     node* aux; 
     aux = r->left;
 
-    r->maxi = r->right->maxi;
-    r->sum = aux->right->sum + r->right->sum;
-    r->smax = max(0, aux->right->smax + r->right->sum);
-
     r->left = aux->right;
-    aux->right = r;
+    r = update(r);
 
-    aux->maxi = r->maxi;
-    aux->sum = aux->left->sum + r->sum;
-    aux->smax = max(0, aux->left->smax + r->sum);
+    aux->right = r;
+    aux = update(aux);
     
     r = aux;
     return r;
@@ -98,16 +102,11 @@ node* rotationLeft(node* r){
     node* aux; 
     aux = r->right;
 
-    r->maxi = aux->left->maxi;
-    r->sum = r->left->sum + aux->left->sum;
-    r->smax = max(0, r->left->smax + aux->left->sum);
-
     r->right = aux->left;
-    aux->left = r;
+    r = update(r);
 
-    aux->maxi = aux->right->maxi;
-    aux->sum = r->sum + aux->right->sum;
-    aux->smax = max(0, r->smax + aux->right->sum);
+    aux->left = r;
+    aux = update(aux);
     
     r = aux;
     return r;
@@ -161,9 +160,7 @@ node* rec_insert(int t, item x, bool is_pop, node* r){
             inner->left = leaf;
             inner->right = r;
         }
-        inner->maxi = inner->right->maxi;
-        inner->sum = inner->left->sum + inner->right->sum;
-        inner->smax = max(0, inner->left->smax + inner->right->sum);
+        inner = update(inner);
         inner->value = 0;
         inner->prior = rand() % range_rand + range_aux;
 
@@ -174,22 +171,16 @@ node* rec_insert(int t, item x, bool is_pop, node* r){
         r->left = rec_insert(t, x, is_pop, r->left);
         if(r->prior < r->left->prior)
             r = rotationRight(r);
-        else{
-            r->maxi = r->right->maxi;
-            r->sum = r->left->sum + r->right->sum;
-            r->smax = max(0, r->left->smax + r->right->sum);
-        }
+        else
+            r = update(r);
     }
     //vá para a direita
     else{
         r->right = rec_insert(t, x, is_pop, r->right);
         if(r->prior < r->right->prior)
             r = rotationLeft(r);
-        else{
-            r->maxi = r->right->maxi;
-            r->sum = r->left->sum + r->right->sum;
-            r->smax = max(0, r->left->smax + r->right->sum);
-        }
+        else
+            r = update(r);
     }
     return r;
 }
@@ -214,9 +205,7 @@ node* rec_delete(int t, node* r){
         //procurar na direita
         else{
             r->right = rec_delete(t, r->right);
-            r->maxi = r->right->maxi;
-            r->sum = r->left->sum + r->right->sum;
-            r->smax = max(0, r->left->smax + r->right->sum);
+            r = update(r);
         }
     }
     else{
@@ -229,9 +218,7 @@ node* rec_delete(int t, node* r){
         //procurar na esquerda
         else{
             r->left = rec_delete(t, r->left);
-            r->maxi = r->right->maxi;
-            r->sum = r->left->sum + r->right->sum;
-            r->smax = max(0, r->left->smax + r->right->sum);
+            r = update(r);
         }
     }
     return r;
