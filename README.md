@@ -4,7 +4,6 @@ Implementation of several data structures with different objectives
 1) `Temporal`
    - Persistent deque
    - Persistent treap
-   - Retroactive stack
    
 2) `Segment Tree`
    - Static segtree
